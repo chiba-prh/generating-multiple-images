@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 300px; padding: 10px; font-family: sans-serif; }
+    .field { margin-bottom: 10px; }
+    label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 3px; }
+    input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #4285f4; color: white; border: none; cursor: pointer; }
+    button:hover { background: #357abd; }
+    .preview { max-width: 100%; margin-top: 5px; display: none; }
+  </style>
+</head>
+<body>
+  <h3>Gemini Quad Splitter</h3>
+  
+  <div class="field">
+    <label>① 画像を選択</label>
+    <input type="file" id="imageInput" accept="image/*">
+    <img id="preview" class="preview">
+  </div>
+
+  <div class="field">
+    <label>② 指示（4つ入力）</label>
+    <input type="text" id="cmd1" placeholder="指示 1" value="この画像を要約して">
+    <input type="text" id="cmd2" placeholder="指示 2" value="この画像からテキストを抽出して">
+    <input type="text" id="cmd3" placeholder="指示 3" value="この画像の改善点を教えて">
+    <input type="text" id="cmd4" placeholder="指示 4" value="この画像を元にキャッチコピーを作って">
+  </div>
+
+  <button id="runBtn">4つのタブで実行</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
