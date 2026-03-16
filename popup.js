@@ -78,8 +78,9 @@ document.getElementById('imageInput').addEventListener('change', (e) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = document.getElementById('preview');
+      const container = document.getElementById('previewContainer');
       img.src = ev.target.result;
-      img.style.display = 'block';
+      container.style.display = 'block'; // コンテナを表示
     };
     reader.readAsDataURL(file);
   }

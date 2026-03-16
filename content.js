@@ -1,23 +1,26 @@
 (async () => {
-  // 1. URLから「自分は何番目のタブか」を判定
   const urlParams = new URLSearchParams(window.location.search);
   const splitIdx = urlParams.get('split_idx');
+  if (splitIdx === null) return;
 
-  if (splitIdx === null) return; // 拡張機能以外から開いた場合は何もしない
+  console.log(`[Gemini Splitter] タブ #${splitIdx} 起動`);
 
-  // 2. ストレージからデータ（画像とコマンド）を取得
+  // 1. ストレージからデータを取得
   const data = await chrome.storage.local.get('geminiTask');
-  if (!data.geminiTask) return;
-
+  if (!data.geminiTask) {
+    console.error("[Gemini Splitter] データが見つかりません");
+    return;
+  }
   const { image, commands } = data.geminiTask;
   const myCommand = commands[parseInt(splitIdx)];
 
-  // 3. ページが完全に読み込まれる（入力欄が出る）のを待つ
+  // 2. 要素を待機する関数
   const waitForElement = (selector) => {
     return new Promise(resolve => {
       const interval = setInterval(() => {
         const el = document.querySelector(selector);
-        if (el) {
+        // Geminiの入力欄は contenteditable="true" を持っていることが多いです
+        if (el && el.offsetHeight > 0) { 
           clearInterval(interval);
           resolve(el);
         }
@@ -25,44 +28,48 @@
     });
   };
 
-  // Geminiの入力欄（role="textbox"）を待つ
-  const inputBox = await waitForElement('div[role="textbox"]');
+  // 3. 入力欄の取得（セレクターを少し広げました）
+  const inputBox = await waitForElement('div[contenteditable="true"], div[role="textbox"]');
+  console.log("[Gemini Splitter] 入力欄を発見");
 
-  // 4. 画像を貼り付ける (Base64 -> Blob -> ClipboardEvent)
-  async function pasteImage(base64Data) {
+  // 4. 画像を貼り付ける関数
+  async function pasteImage(base64Data, target) {
     const res = await fetch(base64Data);
     const blob = await res.blob();
-    const file = new File([blob], "image.png", { type: "image/png" });
+    const file = new File([blob], "image_file.png", { type: blob.type });
 
     const dataTransfer = new DataTransfer();
     dataTransfer.items.add(file);
 
+    target.focus();
     const pasteEvent = new ClipboardEvent('paste', {
       clipboardData: dataTransfer,
       bubbles: true,
       cancelable: true
     });
-
-    inputBox.dispatchEvent(pasteEvent);
+    target.dispatchEvent(pasteEvent);
+    console.log("[Gemini Splitter] 画像を貼り付けました");
   }
 
-  await pasteImage(image);
+  // ★修正ポイント：inputBox を引数に渡す必要があります
+  await pasteImage(image, inputBox);
 
-  // 画像のアップロード処理に少し時間がかかる場合があるため、一瞬待機
+  // 5. テキスト入力と送信
+  // 画像の処理時間を考慮して少し長めに待機
   setTimeout(() => {
-    // 5. テキストを入力
     inputBox.innerText = myCommand;
-    // 入力イベントを発生させて、Gemini側に文字が入ったことを認識させる
     inputBox.dispatchEvent(new InputEvent('input', { bubbles: true }));
+    console.log("[Gemini Splitter] コマンドを入力:", myCommand);
 
-    // 6. 送信ボタンをクリック
     setTimeout(() => {
-      // aria-labelが「メッセージを送信」または「Send message」のボタンを探す
       const sendBtn = document.querySelector('button[aria-label*="送信"], button[aria-label*="Send"]');
-      if (sendBtn) {
+      if (sendBtn && !sendBtn.disabled) {
         sendBtn.click();
+        console.log("[Gemini Splitter] 送信ボタンをクリックしました");
+      } else {
+        console.warn("[Gemini Splitter] 送信ボタンが見つからないか、無効です");
       }
-    }, 1000); // テキスト入力後の微調整時間
-  }, 1500); // 画像貼り付け後の待ち時間
+    }, 1000); 
+  }, 2500); // PNGなどの重いファイルに対応するため待機を少し延長
 
 })();
