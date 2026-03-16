@@ -3,33 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { width: 300px; padding: 10px; font-family: sans-serif; }
-    .field { margin-bottom: 10px; }
-    label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 3px; }
-    input[type="text"], textarea { width: 100%; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #4285f4; color: white; border: none; cursor: pointer; }
-    button:hover { background: #357abd; }
-    .preview { max-width: 100%; margin-top: 5px; display: none; }
+    :root {
+      --primary-color: #4285f4;
+      --hover-color: #357abd;
+      --bg-color: #ffffff;
+      --text-main: #202124;
+      --text-sub: #5f6368;
+      --border-color: #dadce0;
+      --input-bg: #f8f9fa;
+    }
+
+    body {
+      width: 340px;
+      padding: 20px;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    h3 {
+      margin: 0 0 20px 0;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    /* 画像選択エリア */
+    .file-input-wrapper {
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      font-size: 12px;
+      color: var(--text-sub);
+      background: var(--input-bg);
+      padding: 8px;
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* 指示入力エリア */
+    .commands-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .command-item {
+      position: relative;
+    }
+
+    .command-item span {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--primary-color);
+      opacity: 0.7;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 10px 10px 30px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 13px;
+      transition: all 0.2s;
+      background: var(--input-bg);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+    }
+
+    /* プレビュー画像 */
+    .preview-container {
+      margin-top: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+      border: 1px solid var(--border-color);
+    }
+
+    .preview-container img {
+      width: 100%;
+      display: block;
+    }
+
+    /* 実行ボタン */
+    #runBtn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 24px; /* 丸みのあるモダンなボタン */
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    #runBtn:hover {
+      background-color: var(--hover-color);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+
+    #runBtn:active {
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
-  <h3>Gemini Quad Splitter</h3>
+  <h3>✨ Gemini Quad Splitter</h3>
   
-  <div class="field">
-    <label>① 画像を選択</label>
+  <div class="file-input-wrapper">
+    <span class="section-title">Step 1: 画像を選択</span>
     <input type="file" id="imageInput" accept="image/*">
-    <img id="preview" class="preview">
+    <div id="previewContainer" class="preview-container">
+      <img id="preview">
+    </div>
   </div>
 
-  <div class="field">
-    <label>② 指示（4つ入力）</label>
-    <input type="text" id="cmd1" placeholder="指示 1" value="この画像を要約して">
-    <input type="text" id="cmd2" placeholder="指示 2" value="この画像からテキストを抽出して">
-    <input type="text" id="cmd3" placeholder="指示 3" value="この画像の改善点を教えて">
-    <input type="text" id="cmd4" placeholder="指示 4" value="この画像を元にキャッチコピーを作って">
+  <div class="commands-grid">
+    <span class="section-title">Step 2: 4つの指示を入力</span>
+    <div class="command-item"><span>1</span><input type="text" id="cmd1" value="この画像を要約して"></div>
+    <div class="command-item"><span>2</span><input type="text" id="cmd2" value="この画像からテキストを抽出して"></div>
+    <div class="command-item"><span>3</span><input type="text" id="cmd3" value="この画像の改善点を教えて"></div>
+    <div class="command-item"><span>4</span><input type="text" id="cmd4" value="この画像を元にキャッチコピーを作って"></div>
   </div>
 
-  <button id="runBtn">4つのタブで実行</button>
+  <button id="runBtn">4つのタブで実行を開始</button>
 
   <script src="popup.js"></script>
 </body>
